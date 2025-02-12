@@ -10,11 +10,10 @@ import os
 import re
 import signal
 import sys
-import tomllib
 from datetime import date, datetime
-from string import Template, digits
+from string import Template
 
-from structlog import get_logger
+import structlog  # type: ignore
 
 config = {
     "REPORT_SIZE": 1000,
@@ -23,15 +22,8 @@ config = {
 }
 
 
-def load_toml() -> dict:
-    """Load TOML data from file"""
-    with open("pyproject.toml", "rb") as f:
-        toml_data: dict = tomllib.load(f)
-        return toml_data
-
-
 def handler(signum, frame):
-    log = get_logger()
+    log = structlog.stdlib.get_logger()
     log.info("Process stopped by user")
     sys.exit()
 
@@ -40,7 +32,7 @@ class LogHandler:
     def __init__(self, conf: dict, conf_path: str):
         self.conf_file: dict = conf
         self.pattern = "nginx-access-ui.log-*"
-        self.log = get_logger()
+        self.log = structlog.stdlib.get_logger()
 
         if conf_path:
             try:
@@ -57,8 +49,8 @@ class LogHandler:
 
     def __get_latest_filepath(self):
         latest_file = ""
-        last_date: date = date.__init__(self)
-        act_date: date
+        last_date = date.__init__(self)
+        act_date = date.__init__(self)
         file_archive = False
         for file in os.listdir(self.log_dir):
             act_date = self.__get_file_date(self, file)
@@ -66,7 +58,7 @@ class LogHandler:
                 last_date = act_date
                 latest_file = file
         if fnmatch.fnmatch(latest_file, self.pattern) & fnmatch.fnmatch(
-                latest_file, "*.gz"
+            latest_file, "*.gz"
         ):
             latest_file = f"{self.log_dir}/{latest_file}"
             file_archive = True
@@ -78,7 +70,7 @@ class LogHandler:
     @staticmethod
     def __get_file_date(self, filename) -> date:
         match_str = re.search(r"\d{4}\d{2}\d{2}", filename)
-        return datetime.strptime(match_str.group(), "%Y%m%d").date()
+        return datetime.strptime(match_str.group(), "%Y%m%d").date()  # type: ignore
 
     def process_file(self):
         # Получим шаблон
@@ -131,7 +123,7 @@ class LogHandler:
         f = open(fpath, "w")
         f.write(d)
 
-        self.log.info(f'File succesfully uploaded into {fpath}')
+        self.log.info(f"File succesfully uploaded into {fpath}")
 
     @staticmethod
     def __fill_data(self, *args):
@@ -151,10 +143,10 @@ class LogHandler:
                 new_line[-1:][0]
             )
             exist_line[0]["time_perc"] = (
-                    exist_line[0]["all_values"][0] / request_time * 100
+                exist_line[0]["all_values"][0] / request_time * 100
             )
             exist_line[0]["time_avg"] = (
-                    exist_line[0]["time_sum"] / exist_line[0]["count"]
+                exist_line[0]["time_sum"] / exist_line[0]["count"]
             )
             exist_line[0]["time_max"] = (
                 exist_line[0]["time_max"]

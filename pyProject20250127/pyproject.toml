@@ -10,7 +10,10 @@ requires-python = ">=3.12"
 dependencies = [
     "structlog (>=25.1.0,<26.0.0)",
     "argparse (>=1.4.0,<2.0.0)",
-    "pre-commit (>=4.1.0,<5.0.0)"
+    "pre-commit (>=4.1.0,<5.0.0)",
+    "black (>=25.1.0,<26.0.0)",
+    "isort (>=6.0.0,<7.0.0)",
+    "mypy (>=1.15.0,<2.0.0)",
 ]
 
 
