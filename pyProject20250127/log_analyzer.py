@@ -8,9 +8,12 @@ import gzip
 import json
 import os
 import re
+import signal
+import sys
 import tomllib
 from datetime import date, datetime
 from string import Template, digits
+
 from structlog import get_logger
 
 config = {
@@ -25,6 +28,12 @@ def load_toml() -> dict:
     with open("pyproject.toml", "rb") as f:
         toml_data: dict = tomllib.load(f)
         return toml_data
+
+
+def handler(signum, frame):
+    log = get_logger()
+    log.info("Process stopped by user")
+    sys.exit()
 
 
 class LogHandler:
@@ -172,16 +181,14 @@ class LogHandler:
         cnt[new_line[6]] = total[:]
 
 
-
-
-
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        prog="log_analyzer", description="Путь к конфигурационному файлу"
+        prog="log_analyzer", description="Config file path"
     )
     parser.add_argument("-c", "--config", type=str)
     args = parser.parse_args()
 
+    signal.signal(signal.SIGINT, handler)
+
     log = LogHandler(config, args.config)
     log.process_file()
-    # main(config)
