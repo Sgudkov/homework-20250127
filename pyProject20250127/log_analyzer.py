@@ -39,7 +39,7 @@ class LogHandler:
                 with open(conf_path, "rb") as c:
                     self.conf_file = json.loads(c.read())
             except:
-                self.log.error("Parse config fault")
+                self.log.error("Parse config fault ")
                 return
 
         self.report_size, self.report_dir, self.log_dir = self.conf_file.values()
