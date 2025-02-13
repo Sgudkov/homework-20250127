@@ -74,6 +74,22 @@ class LogHandler:
 
     def process_file(self):
         # Получим шаблон
+        """
+        Process the latest log file and generate a report.
+
+        This method reads the latest log file, parses it and generates a report
+        in HTML format. The report is then saved to a file in the `REPORT_DIR`
+        directory.
+
+        The report is a table with columns for URL, count, count percentage, time
+        sum, time percentage, time average, time maximum and time median. The
+        table is sorted by time percentage in descending order.
+
+        The report is limited to the first `REPORT_SIZE` lines. If the file is
+        larger than this, the remaining lines are discarded.
+
+        :return: None
+        """
         html = open("templates/report.html").read()
         template = Template(html)
         cnt = dict()
