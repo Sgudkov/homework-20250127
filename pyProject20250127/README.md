@@ -3,7 +3,6 @@
 
 The Log Analyzer is a Python script designed to process log files and generate reports in HTML format. The script reads log files, parses the data, and produces a report that provides insights into URL access patterns.
 
-
 ## Functionality
 
 The Log Analyzer performs the following functions:
