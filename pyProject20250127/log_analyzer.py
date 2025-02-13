@@ -50,7 +50,7 @@ class LogHandler:
     def __get_latest_filepath(self):
         latest_file = ""
         last_date = date.__init__(self)
-        act_date = date.__init__(self)
+        # act_date = date.__init__(self)
         file_archive = False
         for file in os.listdir(self.log_dir):
             act_date = self.__get_file_date(self, file)
@@ -94,6 +94,8 @@ class LogHandler:
             }
         ]
 
+        url_time_request: dict = {}
+
         self.log.info("Start process data")
 
         if file_archive:
@@ -101,22 +103,44 @@ class LogHandler:
                 for line in file_data:
                     new_line = line.decode().strip().split()
                     self.__fill_data(
-                        self, url_count, request_time, total, cnt, new_line
+                        self,
+                        url_count,
+                        request_time,
+                        total,
+                        cnt,
+                        new_line,
+                        url_time_request,
                     )
         else:
             with open(file_path, mode="rb") as file_data:
                 for line in file_data:
                     new_line = line.decode().strip().split()
                     self.__fill_data(
-                        self, url_count, request_time, total, cnt, new_line
+                        self,
+                        url_count,
+                        request_time,
+                        total,
+                        cnt,
+                        new_line,
+                        url_time_request,
                     )
 
         self.log.info("End process data")
 
         l = []
-        for i in cnt.values():
-            i[0].pop("all_values")
-            l.append(i[0])
+        s = dict(
+            sorted(url_time_request.items(), key=lambda item: item[1], reverse=True)
+        )
+
+        for k, v in s.items():
+            # Minimize report size for each line
+            if self.report_size <= 0:
+                break
+            cnt[k][0].pop("all_values")
+            l.append(cnt[k][0])
+            self.report_size -= 1
+
+        print(self.report_size)
 
         d = template.safe_substitute(dict(table_json=l))
         fpath = f"reports/{fname}"
@@ -127,7 +151,7 @@ class LogHandler:
 
     @staticmethod
     def __fill_data(self, *args):
-        url_count, request_time, total, cnt, new_line = args
+        url_count, request_time, total, cnt, new_line, url_time_request = args
         url_count += 1
         request_time += float(new_line[-1:][0])
         total.clear()
@@ -171,6 +195,7 @@ class LogHandler:
             )
 
         cnt[new_line[6]] = total[:]
+        url_time_request[new_line[6]] = total[0]["time_perc"]
 
 
 if __name__ == "__main__":
