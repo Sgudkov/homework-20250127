@@ -50,4 +50,4 @@ To use the Log Analyzer, simply execute the `log_analyzer.py` script and provide
 Example usage:
 
 ```bash
-python log_analyzer.py -c conf.json
+python log_analyzer.py -c ./conf.json
