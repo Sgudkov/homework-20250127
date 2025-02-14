@@ -38,16 +38,16 @@ class LogHandler:
             try:
                 with open(conf_path, "rb") as c:
                     self.conf_file = json.loads(c.read())
-            except:
-                self.log.error("Parse config fault")
+            except IOError as error:
+                self.log.error(f"Parse config file fault: {error}")
                 return
 
         self.report_size, self.report_dir, self.log_dir = self.conf_file.values()
 
-        # Создадим директорию если нет
+        # Create report directory
         os.makedirs(self.report_dir, exist_ok=True)
 
-    def __get_latest_filepath(self):
+    def get_latest_filepath(self):
         latest_file = ""
         last_date = date.__init__(self)
         # act_date = date.__init__(self)
@@ -73,7 +73,6 @@ class LogHandler:
         return datetime.strptime(match_str.group(), "%Y%m%d").date()  # type: ignore
 
     def process_file(self):
-        # Получим шаблон
         """
         Process the latest log file and generate a report.
 
@@ -93,7 +92,7 @@ class LogHandler:
         html = open("templates/report.html").read()
         template = Template(html)
         cnt = dict()
-        file_path, file_archive, last_date = self.__get_latest_filepath()
+        file_path, file_archive, last_date = self.get_latest_filepath()
         fname = f"report-{last_date.year}.{last_date.month}.{last_date.day}.html"
         url_count = request_time = 0
         total = [
@@ -115,31 +114,39 @@ class LogHandler:
         self.log.info("Start process data")
 
         if file_archive:
-            with gzip.open(file_path, mode="rb") as file_data:
-                for line in file_data:
-                    new_line = line.decode().strip().split()
-                    self.__fill_data(
-                        self,
-                        url_count,
-                        request_time,
-                        total,
-                        cnt,
-                        new_line,
-                        url_time_request,
-                    )
+            try:
+                with gzip.open(file_path, mode="rb") as file_data:
+                    for line in file_data:
+                        new_line = line.decode().strip().split()
+                        self.__fill_data(
+                            self,
+                            url_count,
+                            request_time,
+                            total,
+                            cnt,
+                            new_line,
+                            url_time_request,
+                        )
+            except IOError as error:
+                self.log.error(f"Parse log .gz file fault: {error}")
+                return
         else:
-            with open(file_path, mode="rb") as file_data:
-                for line in file_data:
-                    new_line = line.decode().strip().split()
-                    self.__fill_data(
-                        self,
-                        url_count,
-                        request_time,
-                        total,
-                        cnt,
-                        new_line,
-                        url_time_request,
-                    )
+            try:
+                with open(file_path, mode="rb") as file_data:
+                    for line in file_data:
+                        new_line = line.decode().strip().split()
+                        self.__fill_data(
+                            self,
+                            url_count,
+                            request_time,
+                            total,
+                            cnt,
+                            new_line,
+                            url_time_request,
+                        )
+            except IOError as error:
+                self.log.error(f"Parse log file fault: {error}")
+                return
 
         self.log.info("End process data")
 
@@ -148,8 +155,8 @@ class LogHandler:
             sorted(url_time_request.items(), key=lambda item: item[1], reverse=True)
         )
 
+        # Limit report size
         for k, v in s.items():
-            # Minimize report size for each line
             if self.report_size <= 0:
                 break
             cnt[k][0].pop("all_values")
