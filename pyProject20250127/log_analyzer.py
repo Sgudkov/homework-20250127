@@ -24,7 +24,7 @@ config = {
 
 def handler(signum, frame):
     log = structlog.stdlib.get_logger()
-    log.info("Process stopped by user")
+    log.info("Process stopped by user ")
     sys.exit()
 
 
