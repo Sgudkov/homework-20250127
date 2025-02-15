@@ -6,7 +6,7 @@ lint:
 install:
 	poetry install
 
-test: install
+test:
 	poetry run pytest
 
 run:
