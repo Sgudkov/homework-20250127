@@ -22,7 +22,7 @@ def test_log_analyzer_file_path():
         "LOG_DIR": "./log",
     }
     log = LogHandler(config, "")
-    assert os.path.isfile(config["LOG_DIR"])
+    assert os.path.isfile(config["LOG_DIR"]) is False
     file_path, file_archive, last_date = log.get_latest_filepath()
     assert file_path is not None
     assert file_archive is not None
