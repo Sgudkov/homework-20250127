@@ -11,3 +11,9 @@ test:
 
 run:
 	poetry run python log_analyzer.py
+
+pre-commit:
+	poetry run pre-commit install
+
+pre-commit-run:
+	poetry run pre-commit run --all
