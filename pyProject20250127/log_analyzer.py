@@ -89,11 +89,17 @@ class LogHandler:
 
         :return: None
         """
+        file_path, file_archive, last_date = self.get_latest_filepath()
+        fname = f"report-{last_date.year}.{last_date.month}.{last_date.day}.html"
+        fpath = f"reports/{fname}"
+
+        if os.path.isfile(fpath):
+            self.log.info(f"File {fpath} already exists")
+            return
+
         html = open("templates/report.html").read()
         template = Template(html)
         cnt = dict()
-        file_path, file_archive, last_date = self.get_latest_filepath()
-        fname = f"report-{last_date.year}.{last_date.month}.{last_date.day}.html"
         url_count = request_time = 0
         total = [
             {
@@ -113,40 +119,28 @@ class LogHandler:
 
         self.log.info("Start process data")
 
-        if file_archive:
-            try:
-                with gzip.open(file_path, mode="rb") as file_data:
-                    for line in file_data:
-                        new_line = line.decode().strip().split()
-                        self.__fill_data(
-                            self,
-                            url_count,
-                            request_time,
-                            total,
-                            cnt,
-                            new_line,
-                            url_time_request,
-                        )
-            except IOError as error:
-                self.log.error(f"Parse log .gz file fault: {error}")
-                return
-        else:
-            try:
-                with open(file_path, mode="rb") as file_data:
-                    for line in file_data:
-                        new_line = line.decode().strip().split()
-                        self.__fill_data(
-                            self,
-                            url_count,
-                            request_time,
-                            total,
-                            cnt,
-                            new_line,
-                            url_time_request,
-                        )
-            except IOError as error:
-                self.log.error(f"Parse log file fault: {error}")
-                return
+        try:
+            opener = (
+                gzip.open(file_path, mode="rb")
+                if file_archive
+                else open(file_path, mode="rb")
+            )
+            for line in opener:
+                new_line = line.decode().strip().split()
+                self.__fill_data(
+                    self,
+                    url_count,
+                    request_time,
+                    total,
+                    cnt,
+                    new_line,
+                    url_time_request,
+                )
+
+            opener.close()
+        except IOError as error:
+            self.log.error(f"Parse log file fault: {error}")
+            return
 
         self.log.info("End process data")
 
@@ -163,10 +157,7 @@ class LogHandler:
             l.append(cnt[k][0])
             self.report_size -= 1
 
-        print(self.report_size)
-
         d = template.safe_substitute(dict(table_json=l))
-        fpath = f"reports/{fname}"
         f = open(fpath, "w")
         f.write(d)
 
